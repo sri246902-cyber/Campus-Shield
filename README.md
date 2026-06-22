@@ -102,3 +102,11 @@ BE-COMPUTER SCIENCE AND ENGINEERING
 ## 📌 Version
 
 CampusShield v1.0
+<img width="722" height="1396" alt="image" src="https://github.com/user-attachments/assets/37fe6833-6e2b-49b2-afb4-bcf40c12def6" />
+
+<img width="1080" height="2087" alt="image" src="https://github.com/user-attachments/assets/16ea7fbc-e62f-45e1-87e0-7ff3ab7e2a76" />
+
+<img width="722" height="1330" alt="image" src="https://github.com/user-attachments/assets/cc20248b-e5cb-41ab-804b-cb3c92cc0484" />
+
+<img width="722" height="1404" alt="image" src="https://github.com/user-attachments/assets/295af83a-e6e4-4b48-bb4b-f267d48e648e" />
+
