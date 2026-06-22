@@ -1,11 +1,13 @@
 package com.kct.campusshield.threat
 
 import android.util.Log
+import com.kct.campusshield.BuildConfig
 
 object ThreatManager {
 
-    private const val API_KEY =
-        "AIzaSyCcefPv8MLwXaoFqfTmuHfEJ-jH-dv_wV4"
+
+    val apiKey = BuildConfig.THREAT_API_KEY
+
 
     suspend fun checkUrl(
         url: String
@@ -44,7 +46,7 @@ object ThreatManager {
 
             val response =
                 ThreatRetrofit.api.checkThreat(
-                    API_KEY,
+                    BuildConfig.THREAT_API_KEY,
                     request
                 )
 

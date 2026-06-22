@@ -2,11 +2,11 @@ package com.kct.campusshield.whois
 
 import android.net.Uri
 import android.util.Log
+import com.kct.campusshield.BuildConfig
 
 object WhoisManager {
 
-    private const val API_KEY =
-        "d3e46839b8c041ae84bd333919b609fa"
+    val apiKey = BuildConfig.WHOIS_API_KEY
 
     suspend fun getWhoisStatus(
         url: String
@@ -16,10 +16,11 @@ object WhoisManager {
 
             val host =
                 Uri.parse(url).host ?: return null
+            Log.d("WHOIS_KEY", BuildConfig.WHOIS_API_KEY)
 
             val response =
                 RetrofitClient.api.getWhois(
-                    apiKey = API_KEY,
+                    apiKey = BuildConfig.WHOIS_API_KEY,
                     domainName = host
                 )
 
