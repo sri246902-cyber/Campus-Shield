@@ -62,28 +62,6 @@ The app performs multiple security checks and classifies URLs as **Safe**, **Sus
 
 ---
 
-
-## ⚙️ Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/sri246902-cyber/Campus-Shield.git
-```
-
-2. Open the project in Android Studio.
-
-3. Create a `local.properties` file and add:
-
-```properties
-WHOIS_API_KEY=YOUR_KEY
-THREAT_API_KEY=YOUR_KEY
-```
-
-4. Sync Gradle and run the application.
-
----
-
 ## 🔐 Security Note
 
 API keys are stored using local configuration files and are not included in the public repository.
