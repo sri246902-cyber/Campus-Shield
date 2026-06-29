@@ -6,17 +6,12 @@ import retrofit2.http.Query
 
 interface WhoisApi {
 
-    @GET("v2.0/whois/live")
+    @GET("whois")
     suspend fun getWhois(
 
-        @Query("apiKey")
-        apiKey: String,
-
-        @Query("domainName")
-        domainName: String,
-
-        @Query("format")
-        format: String = "json"
+        @Query("domain")
+        domain: String
 
     ): Response<WhoisResponse>
+
 }

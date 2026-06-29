@@ -5,8 +5,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
+    // CHANGE THIS TO YOUR LAPTOP'S IP ADDRESS
     private const val BASE_URL =
-        "https://api.whoisfreaks.com/"
+        "https://campus-shield-backend-dexh.onrender.com/"
 
     val api: WhoisApi by lazy {
 

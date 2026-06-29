@@ -48,6 +48,8 @@ fun AnalysisScreen(
 
             val whoisResponse =
                 WhoisManager.getWhoisStatus(url)
+            Log.d("AGE_DEBUG", whoisResponse.toString())
+            Log.d("AGE_DEBUG", "create_date = ${whoisResponse?.create_date}")
 
             WhoisState.whoisStatus =
                 if (whoisResponse?.domain_registered == "yes")
@@ -60,45 +62,47 @@ fun AnalysisScreen(
                 whoisResponse.toString()
             )
 
-            if (whoisResponse?.create_date != null) {
+            if (!whoisResponse?.create_date.isNullOrEmpty()) {
 
-                val year =
-                    whoisResponse.create_date
-                        .substring(0, 4)
-                        .toInt()
+                try {
 
-                val currentYear =
-                    java.util.Calendar
-                        .getInstance()
-                        .get(java.util.Calendar.YEAR)
+                    val year =
+                        whoisResponse!!.create_date!!
+                            .substring(0, 4)
+                            .toInt()
 
-                val age =
-                    currentYear - year
+                    val currentYear =
+                        java.util.Calendar
+                            .getInstance()
+                            .get(java.util.Calendar.YEAR)
 
-                // Save actual domain age
-                WhoisState.domainAgeYears =
-                    age
+                    val age =
+                        currentYear - year
 
-                // Risk score based on age
-                WhoisState.domainAgeScore =
-                    when {
+                    WhoisState.domainAgeYears = age
+                    Log.d("AGE_DEBUG", "Age calculated = $age")
 
-                        age < 1 -> 30
+                    WhoisState.domainAgeScore =
+                        when {
 
-                        age < 2 -> 20
+                            age < 1 -> 30
 
-                        age < 5 -> 10
+                            age < 2 -> 20
 
-                        else -> 0
+                            age < 5 -> 10
 
-                    }
+                            else -> 0
 
-                Log.d(
-                    "DOMAIN_AGE",
-                    "$age years"
-                )
+                        }
+
+                } catch (e: Exception) {
+
+                    WhoisState.domainAgeYears = 0
+                    WhoisState.domainAgeScore = 20
+
+                }
+
             }
-
             Log.d(
                 "WHOIS_TEST",
                 "Registered = ${whoisResponse?.domain_registered}"
@@ -108,7 +112,6 @@ fun AnalysisScreen(
                 "WHOIS_TEST",
                 "Created = ${whoisResponse?.create_date}"
             )
-
         } catch (e: Exception) {
 
             WhoisState.whoisStatus = null

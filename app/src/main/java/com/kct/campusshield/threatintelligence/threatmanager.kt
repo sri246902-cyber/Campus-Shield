@@ -1,13 +1,8 @@
 package com.kct.campusshield.threat
 
 import android.util.Log
-import com.kct.campusshield.BuildConfig
 
 object ThreatManager {
-
-
-    val apiKey = BuildConfig.THREAT_API_KEY
-
 
     suspend fun checkUrl(
         url: String
@@ -46,19 +41,14 @@ object ThreatManager {
 
             val response =
                 ThreatRetrofit.api.checkThreat(
-                    BuildConfig.THREAT_API_KEY,
                     request
                 )
 
-            Log.d(
-                "THREAT_TEST",
-                "HTTP Code = ${response.code()}"
-            )
-
-            Log.d(
-                "THREAT_TEST",
-                "Body = ${response.body()}"
-            )
+            Log.d("THREAT_TEST", "HTTP Code = ${response.code()}")
+            Log.d("THREAT_TEST", "Response = ${response.body()}")
+            Log.d("THREAT_TEST", "Error = ${response.errorBody()?.string()}")
+            Log.d("THREAT_DEBUG", "Calling backend...")
+            Log.d("THREAT_DEBUG", "Response code = ${response.code()}")
 
             response.body()?.matches?.isNotEmpty() == true
 

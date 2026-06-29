@@ -27,17 +27,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField(
-            "String",
-            "WHOIS_API_KEY",
-            "\"${localProperties.getProperty("WHOIS_API_KEY")}\""
-        )
 
-        buildConfigField(
-            "String",
-            "THREAT_API_KEY",
-            "\"${localProperties.getProperty("THREAT_API_KEY")}\""
-        )
     }
 
     buildTypes {

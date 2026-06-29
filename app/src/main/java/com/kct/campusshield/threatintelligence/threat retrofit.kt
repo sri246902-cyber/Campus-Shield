@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ThreatRetrofit {
 
     private const val BASE_URL =
-        "https://safebrowsing.googleapis.com/"
+        "https://campus-shield-backend-dexh.onrender.com"
 
     val api: ThreatApi by lazy {
 

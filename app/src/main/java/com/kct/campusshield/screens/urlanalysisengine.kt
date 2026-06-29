@@ -9,7 +9,6 @@ object UrlAnalyzer {
                 .trim()
 
         var score = 0
-
         val reasons =
             mutableListOf<String>()
 

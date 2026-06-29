@@ -23,6 +23,14 @@ import com.kct.campusshield.threat.ThreatState
 import com.kct.campusshield.whoisfreaks.WhoisState
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.kct.campusshield.dns.DNSState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.kct.campusshield.redirect.RedirectAnalyzer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.compose.runtime.*
 
 private fun openUrlAndCloseApp(
     activity: Activity,
@@ -64,6 +72,47 @@ fun ResultScreen(
     val context = LocalContext.current
     val activity = context as Activity
 
+    var redirectCount by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    LaunchedEffect(url) {
+
+        redirectCount = withContext(
+            Dispatchers.IO
+        ) {
+            RedirectAnalyzer.analyze(url)
+        }
+
+    }
+
+    if (redirectCount == null) {
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                CircularProgressIndicator()
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
+                Text(
+                    text = "Analyzing URL..."
+                )
+            }
+        }
+
+        return
+    }
+    val redirects = redirectCount!!
+
     val riskResult =
         UrlAnalyzer.analyze(url)
 
@@ -79,8 +128,7 @@ fun ResultScreen(
     val sslValid =
         SSLState.isValid
 
-    val redirectCount =
-        RedirectState.redirectCount
+
 
     val threatDetected =
         ThreatState.isThreat
@@ -92,8 +140,8 @@ fun ResultScreen(
                         DNSState.dnsScore +
 
                         when {
-                            redirectCount >= 3 -> 20
-                            redirectCount >= 1 -> 10
+                            redirects >= 3 -> 20
+                            redirects >= 1 -> 10
                             else -> 0
                         } +
 
@@ -102,10 +150,21 @@ fun ResultScreen(
                             else -> 0
                         }
                 ).coerceAtMost(100)
+    val noRuleMatched =
+        riskResult.score == 0
+
+    val noEvidence =
+        WhoisState.domainAgeYears == 0 &&
+                !DNSState.dnsResolved &&
+                sslValid != true
+
     val result = when {
 
         threatDetected == true ->
             "PHISHING"
+
+        noRuleMatched && noEvidence ->
+            "UNDETECTED"
 
         finalScore >= 70 ->
             "PHISHING"
@@ -120,43 +179,31 @@ fun ResultScreen(
 
     LaunchedEffect(Unit) {
 
-        StatisticsManager.incrementTotal(
-            context
-        )
+        StatisticsManager.incrementTotal(context)
 
-        when (result) {
+        when(result) {
 
             "SAFE" -> {
-
-                StatisticsManager.incrementSafe(
-                    context
-                )
-
+                StatisticsManager.incrementSafe(context)
             }
 
             "SUSPICIOUS" -> {
-
-                StatisticsManager
-                    .incrementSuspicious(
-                        context
-                    )
-
+                StatisticsManager.incrementSuspicious(context)
             }
 
             "PHISHING" -> {
+                StatisticsManager.incrementPhishing(context)
+            }
 
-                StatisticsManager
-                    .incrementPhishing(
-                        context
-                    )
-
+            "UNDETECTED" -> {
+                // nothing
             }
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(
                 start = 24.dp,
                 end = 24.dp,
@@ -173,6 +220,7 @@ fun ResultScreen(
             fontWeight = FontWeight.Bold,
             color =
                 when (result) {
+
                     "SAFE" -> Color(0xFF4CAF50)
                     "SUSPICIOUS" -> Color(0xFFFF9800)
                     else -> Color.Red
@@ -184,8 +232,11 @@ fun ResultScreen(
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFECECEC)
+            )
+        ){
 
             Text(
                 text = url,
@@ -238,23 +289,67 @@ fun ResultScreen(
             modifier = Modifier.height(15.dp)
         )
 
-        Text(
-            text = "Risk Score : $finalScore/100",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+
+            CircularProgressIndicator(
+                progress = { finalScore / 100f },
+                modifier = Modifier.size(140.dp),
+                strokeWidth = 10.dp,
+                color = when (result) {
+                    "SAFE" -> Color(0xFF4CAF50)
+                    "SUSPICIOUS" -> Color(0xFFFF9800)
+                    else -> Color.Red
+                }
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "$finalScore",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "/100",
+                    color = Color.Gray
+                )
+            }
+        }
+
         Spacer(
-            modifier = Modifier.height(8.dp)
+            modifier = Modifier.height(12.dp)
         )
 
-        LinearProgressIndicator(
-            progress = { finalScore / 100f },
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = when(result) {
+                "SAFE" -> "Safe"
+                "SUSPICIOUS" -> "Suspicious"
+                else -> "Phishing"
+            },
+            fontWeight = FontWeight.Bold,
+            color =
+                when (result) {
+                    "SAFE" -> Color(0xFF4CAF50)
+                    "SUSPICIOUS" -> Color(0xFFFF9800)
+                    "UNDETECTED" -> Color.Gray
+                    else -> Color.Red
+                }
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFECECEC)
+            )
+        )
+
+        {
 
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -290,7 +385,7 @@ fun ResultScreen(
                 )
 
                 Text(
-                    text = "↪ Redirects : $redirectCount"
+                    text = "↪ Redirects : $redirects"
                 )
 
                 Text(
@@ -311,7 +406,7 @@ fun ResultScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF5F5F5)
+                    containerColor = Color(0xFFECECEC)
                 )
             ) {
 
@@ -356,6 +451,60 @@ fun ResultScreen(
         )
 
         when (result) {
+
+            "UNDETECTED" -> {
+
+                Text(
+                    text = "⚠ Unable to confidently classify this URL",
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                Text(
+                    text = "CampusShield could not gather enough evidence to determine whether this URL is safe or malicious. We recommend verifying it manually using trusted security services before opening.",
+                    color = Color.Gray
+                )
+
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
+
+                Button(
+                    onClick = {
+                        openUrlAndCloseApp(
+                            activity,
+                            url
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFF9800)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Text("Open Carefully")
+
+                }
+
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
+                OutlinedButton(
+                    onClick = {
+                        activity.finishAffinity()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Text("Close")
+
+                }
+            }
 
             "SAFE" -> {
 
@@ -441,27 +590,6 @@ fun ResultScreen(
 
                 Spacer(
                     modifier = Modifier.height(20.dp)
-                )
-
-                Button(
-                    onClick = {
-                        openUrlAndCloseApp(
-                            activity,
-                            url
-                        )
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    Text("Open Anyway")
-
-                }
-
-                Spacer(
-                    modifier = Modifier.height(10.dp)
                 )
 
                 OutlinedButton(
